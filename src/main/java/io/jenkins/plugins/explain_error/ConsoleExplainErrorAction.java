@@ -79,6 +79,7 @@ public class ConsoleExplainErrorAction implements Action {
                 // Save the explanation as a build action (like the sidebar functionality)
                 ErrorExplanationAction action = new ErrorExplanationAction(explanation, errorText);
                 run.addOrReplaceAction(action);
+                run.save();
 
                 writeJsonResponse(rsp, explanation);
             } else {

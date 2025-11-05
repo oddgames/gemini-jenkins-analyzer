@@ -83,11 +83,6 @@ public class ExplainErrorStep extends Step {
             Run<?, ?> run = getContext().get(Run.class);
             TaskListener listener = getContext().get(TaskListener.class);
 
-            // Add console explain error action to build (if not already present)
-            if (run.getAction(ConsoleExplainErrorAction.class) == null) {
-                run.addOrReplaceAction(new ConsoleExplainErrorAction(run));
-            }
-
             ErrorExplainer explainer = new ErrorExplainer();
             explainer.explainError(run, listener, step.getLogPattern(), step.getMaxLines());
 
