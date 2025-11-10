@@ -1,0 +1,120 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="Analyze Error Plugin Configuration">
+        <f:entry title="Enable AI Error Explanation" field="enableExplanation">
+            <f:checkbox />
+        </f:entry>
+        
+        <f:entry title="AI Provider" field="provider">
+            <f:select />
+        </f:entry>
+        
+        <f:entry title="API Key" field="apiKey">
+            <f:password />
+        </f:entry>
+
+        <f:entry title="API URL" field="apiUrl">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="AI Model" field="model">
+            <f:textbox default="gemini-2.0-flash"/>
+        </f:entry>
+
+        <f:entry title="Error Pattern Preset"
+                 description="Select a predefined set of error patterns for common build environments, or choose 'None' to use custom patterns.">
+            <select id="errorPatternPreset" name="errorPatternPreset" class="setting-input">
+                <f:option value="NONE">None - Custom Patterns</f:option>
+                <f:option value="UNITY">Unity (Xcode, Android, iOS)</f:option>
+            </select>
+            <f:button onclick="applyErrorPatternPreset(); return false;" value="Apply Preset" />
+        </f:entry>
+
+        <f:entry title="Error Log Patterns"
+                 description="Regular expressions to filter error logs (one per line). If specified, only log lines matching these patterns will be sent to the AI. Leave empty to send all logs.">
+            <f:repeatableTextbox field="errorPatterns" />
+        </f:entry>
+
+        <script type="text/javascript">
+            function applyErrorPatternPreset() {
+                var presetSelect = document.getElementById('errorPatternPreset');
+                var selectedPreset = presetSelect.value;
+
+                if (selectedPreset === 'NONE') {
+                    return;
+                }
+
+                // Get the patterns from the backend
+                var url = '../descriptorByName/io.jenkins.plugins.gemini_jenkins_analyzer.GlobalConfigurationImpl/getPresetPatterns';
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Crumb': document.querySelector('meta[name="_crumb"]')?.getAttribute('content') || ''
+                    },
+                    body: 'preset=' + encodeURIComponent(selectedPreset)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.kind === 'ok') {
+                        var patterns = data.message.split('\n');
+
+                        // Find all errorPatterns textboxes
+                        var container = document.querySelector('div[name="errorPatterns"]')?.closest('.repeated-chunk')?.parentElement;
+
+                        if (!container) {
+                            // Try alternative selector for repeatableTextbox
+                            var entries = document.querySelectorAll('input[name="errorPatterns"]');
+
+                            // Clear existing patterns
+                            entries.forEach(function(entry) {
+                                var parent = entry.closest('.repeated-chunk');
+                                if (parent) {
+                                    var deleteButton = parent.querySelector('.repeatable-delete');
+                                    if (deleteButton) {
+                                        deleteButton.click();
+                                    }
+                                }
+                            });
+
+                            // Wait for deletion animation
+                            setTimeout(function() {
+                                // Add new patterns
+                                patterns.forEach(function(pattern, index) {
+                                    if (pattern.trim()) {
+                                        var addButton = document.querySelector('button.repeatable-add[suffix="errorPatterns"]');
+                                        if (addButton) {
+                                            addButton.click();
+
+                                            // Wait for the new field to be added
+                                            setTimeout(function() {
+                                                var inputs = document.querySelectorAll('input[name="errorPatterns"]');
+                                                if (inputs[index]) {
+                                                    inputs[index].value = pattern.trim();
+                                                }
+                                            }, 100);
+                                        }
+                                    }
+                                });
+                            }, 200);
+                        }
+                    } else {
+                        alert('Failed to load preset patterns: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading preset:', error);
+                    alert('Failed to load preset patterns');
+                });
+            }
+        </script>
+
+        <f:entry title="">
+            <div>
+                <f:validateButton title="Test Configuration" progress="Testing..."
+                                method="testConfiguration" with="apiKey,provider,apiUrl,model" />
+            </div>
+        </f:entry>
+    </f:section>
+</j:jelly>

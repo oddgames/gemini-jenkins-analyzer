@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+    <l:layout title="AI Error Explanation">
+        <st:include it="${it.run}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <h1>AI Error Explanation</h1>
+            
+            <l:card title="Generated on: ${it.formattedTimestamp}">
+                <pre style="white-space: pre-wrap; word-wrap: break-word;" class="jenkins-!-margin-bottom-0">${it.analysis}</pre>
+            </l:card>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

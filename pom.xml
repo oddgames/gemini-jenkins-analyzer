@@ -13,22 +13,23 @@
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
-  <artifactId>explain-error</artifactId>
+  <artifactId>gemini-jenkins-analyzer</artifactId>
   <version>${changelist}</version>
   <packaging>hpi</packaging>
 
   <properties>
     <changelist>999999-SNAPSHOT</changelist>
-    <gitHubRepo>jenkinsci/explain-error-plugin</gitHubRepo>
+    <gitHubRepo>jenkinsci/gemini-jenkins-analyzer-plugin</gitHubRepo>
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <langchain4j.version>1.4.0</langchain4j.version>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
-  <name>Explain Error Plugin</name>
+  <name>Gemini Jenkins Analyzer</name>
   <description>
-    AI-powered Jenkins plugin that explains pipeline and job failures with human-readable insights.
+    AI-powered Jenkins plugin that analyzes pipeline and job failures with human-readable insights using Google Gemini.
   </description>
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
@@ -125,20 +126,21 @@
 
     <dependency>
       <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-open-ai</artifactId>
-      <version>${langchain4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>dev.langchain4j</groupId>
       <artifactId>langchain4j-google-ai-gemini</artifactId>
       <version>${langchain4j.version}</version>
     </dependency>
 
+    <!-- Mockito for unit testing -->
     <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-ollama</artifactId>
-      <version>${langchain4j.version}</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

@@ -1,22 +1,15 @@
-<!-- [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/explain-error.svg?color=blue)](https://plugins.jenkins.io/explain-error/) -->
 <p align="center">
-  <img src="docs/images/logo-new.png" width="800" alt="Explain Error Plugin">
+  <img src="docs/images/logo-new.png" width="800" alt="Gemini Jenkins Analyzer">
 </p>
 
-<h1 align="center">Explain Error — Jenkins Plugin</h1>
-<p align="center">🤖 AI-powered plugin that explains Jenkins job failures with human-readable insights.</p>
+<h1 align="center">Gemini Jenkins Analyzer — Jenkins Plugin</h1>
+<p align="center">🤖 AI-powered plugin that analyzes Jenkins job failures with human-readable insights.</p>
 
 <p align="center">
-  <a href="https://plugins.jenkins.io/explain-error/">
-    <img alt="Jenkins Plugin" src="https://img.shields.io/jenkins/plugin/v/explain-error.svg">
+  <a href="https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/releases/latest">
+    <img alt="GitHub Release" src="https://img.shields.io/github/release/jenkinsci/gemini-jenkins-analyzer-plugin.svg?label=changelog">
   </a>
-  <a href="https://github.com/jenkinsci/explain-error-plugin/releases/latest">
-    <img alt="GitHub Release" src="https://img.shields.io/github/release/jenkinsci/explain-error-plugin.svg?label=changelog">
-  </a>
-  <a href="https://ci.jenkins.io/job/Plugins/job/explain-error-plugin/job/main/">
-    <img alt="Build Status" src="https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fexplain-error-plugin%2Fmain">
-  </a>
-  <img alt="License" src="https://img.shields.io/github/license/jenkinsci/explain-error-plugin">
+  <img alt="License" src="https://img.shields.io/github/license/jenkinsci/gemini-jenkins-analyzer-plugin">
 </p>
 
 ---
@@ -31,7 +24,7 @@
 
 Tired of digging through long Jenkins logs to understand what went wrong?
 
-**Explain Error Plugin** leverages AI to automatically interpret job and pipeline failures—saving you time and helping you fix issues faster.
+**Gemini Jenkins Analyzer** leverages AI to automatically interpret job and pipeline failures—saving you time and helping you fix issues faster.
 
 Whether it’s a compilation error, test failure, or deployment hiccup, this plugin turns confusing logs into human-readable insights.
 
@@ -55,19 +48,15 @@ Whether it’s a compilation error, test failure, or deployment hiccup, this plu
 
 ### Installation
 
-1. **Install via Jenkins Plugin Manager:**
-   - Go to `Manage Jenkins` → `Manage Plugins` → `Available`
-   - Search for "Explain Error Plugin"
-   - Click `Install` and restart Jenkins
-
-2. **Manual Installation:**
-   - Download the `.hpi` file from [releases](https://plugins.jenkins.io/explain-error/releases/)
-   - Upload via `Manage Jenkins` → `Manage Plugins` → `Advanced`
+**Manual Installation:**
+1. Build the plugin from source or download the `.hpi` file from [GitHub releases](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/releases/)
+2. Upload via `Manage Jenkins` → `Manage Plugins` → `Advanced`
+3. Restart Jenkins
 
 ### Configuration
 
 1. Go to `Manage Jenkins` → `Configure System`
-2. Find the **"Explain Error Plugin Configuration"** section
+2. Find the **"Gemini Jenkins Analyzer Configuration"** section
 3. Configure the following settings:
 
 | Setting | Description | Default |
@@ -85,12 +74,12 @@ Whether it’s a compilation error, test failure, or deployment hiccup, this plu
 
 ### Configuration as Code (CasC)
 
-This plugin supports [Configuration as Code](https://plugins.jenkins.io/configuration-as-code/) for automated setup. Use the `explainError` symbol in your YAML configuration:
+This plugin supports [Configuration as Code](https://plugins.jenkins.io/configuration-as-code/) for automated setup. Use the `geminiAnalyzer` symbol in your YAML configuration:
 
 **OpenAI Configuration:**
 ```yaml
 unclassified:
-  explainError:
+  geminiAnalyzer:
     enableExplanation: true
     provider: "OPENAI"
     apiKey: "${AI_API_KEY}"
@@ -101,7 +90,7 @@ unclassified:
 **Google Gemini Configuration:**
 ```yaml
 unclassified:
-  explainError:
+  geminiAnalyzer:
     enableExplanation: true
     provider: "GEMINI"
     apiKey: "${AI_API_KEY}"
@@ -112,7 +101,7 @@ unclassified:
 **Ollama Configuration:**
 ```yaml
 unclassified:
-  explainError:
+  geminiAnalyzer:
     enableExplanation: true
     provider: "OLLAMA"
     apiUrl: "http://localhost:11434"
@@ -150,7 +139,7 @@ This allows you to manage the plugin configuration alongside your other Jenkins 
 
 ### Method 1: Pipeline Step
 
-Use `explainError()` in your pipeline (e.g., in a `post` block):
+Use `analyzeError()` in your pipeline (e.g., in a `post` block):
 
 ```groovy
 pipeline {
@@ -167,8 +156,8 @@ pipeline {
     }
     post {
         failure {
-            // Automatically explain errors when build fails
-            explainError()
+            // Automatically analyze errors when build fails
+            analyzeError()
         }
     }
 }
@@ -177,7 +166,7 @@ pipeline {
 Optional parameters:
 
 ```groovy
-explainError(
+analyzeError(
   maxLines: 500,
   logPattern: '(?i)(error|failed|exception)'
 )
@@ -190,8 +179,8 @@ Output appears in the sidebar of the failed job.
 
 Works with Freestyle, Declarative, or any job type.
 
-1. Go to the failed build’s console output
-2. Click **Explain Error** button in the top
+1. Go to the failed build's console output
+2. Click **Analyze Error** button in the top
 3. View results directly under the button
 
 ![AI Error Explanation](docs/images/console-output.png)
@@ -206,20 +195,20 @@ Works with Freestyle, Declarative, or any job type.
 
 Enable debug logs:
 
-`Manage Jenkins` → `System Log` → Add logger for `io.jenkins.plugins.explain_error`
+`Manage Jenkins` → `System Log` → Add logger for `io.jenkins.plugins.gemini_jenkins_analyzer`
 
 ## Best Practices
 
-1. Use `explainError()` in `post { failure { ... } }` blocks
+1. Use `analyzeError()` in `post { failure { ... } }` blocks
 2. Apply `logPattern` to focus on relevant errors
 3. Monitor your AI provider usage to control costs
 4. Keep plugin updated regularly
 
 ## Support & Community
 
-- [GitHub Issues](https://github.com/jenkinsci/explain-error-plugin/issues) for bug reports and feature requests
+- [GitHub Issues](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/issues) for bug reports and feature requests
 - [Contributing Guide](CONTRIBUTING.md) if you'd like to help
-- Security concerns? Email security@jenkins.io
+- Security concerns? Report via [GitHub Security Advisories](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/security/advisories)
 
 ## License
 
@@ -227,5 +216,5 @@ Licensed under the [MIT License](LICENSE.md).
 
 ## Acknowledgments
 
-Built with ❤️ for the Jenkins community.
-If you find it useful, please ⭐ us on GitHub!
+Built for the Jenkins community.
+If you find it useful, please star us on GitHub!

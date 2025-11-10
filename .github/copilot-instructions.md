@@ -1,35 +1,36 @@
-# Copilot Instructions for Explain Error Plugin
+# Copilot Instructions for Gemini Jenkins Analyzer
 
 ## Project Overview
 
-The Explain Error Plugin is a Jenkins plugin that provides AI-powered explanations for build failures and pipeline errors. It integrates with multiple AI providers (OpenAI, Google Gemini) to analyze error logs and provide human-readable insights to help developers understand and resolve build issues.
+The Gemini Jenkins Analyzer is a Jenkins plugin that provides AI-powered analysis for build failures and pipeline errors. It integrates with multiple AI providers (OpenAI, Google Gemini, Ollama) to analyze error logs and provide human-readable insights to help developers understand and resolve build issues.
 
 ## Architecture
 
 ### Key Components
 
-- **GlobalConfigurationImpl**: Main plugin configuration class with `@Symbol("explainError")` for Configuration as Code support
+- **GlobalConfigurationImpl**: Main plugin configuration class with `@Symbol("geminiAnalyzer")` for Configuration as Code support
 - **BaseAIService**: Abstract base class for AI provider implementations
-- **OpenAIService** / **GeminiService**: Provider-specific AI service implementations
-- **ExplainErrorStep**: Pipeline step implementation for `explainError()` function
-- **ConsoleExplainErrorAction**: Adds "Explain Error" button to console output
+- **OpenAIService** / **GeminiService** / **OllamaService**: Provider-specific AI service implementations
+- **AnalyzeErrorStep**: Pipeline step implementation for `analyzeError()` function
+- **ConsoleAnalyzeErrorAction**: Adds "Analyze Error" button to console output
 - **ErrorExplanationAction**: Build action for storing and displaying AI explanations
-- **ConsolePageDecorator**: UI decorator to show explain button when conditions are met
+- **ConsolePageDecorator**: UI decorator to show analyze button when conditions are met
 
 ### Package Structure
 
 ```
-src/main/java/io/jenkins/plugins/explain_error/
-├── GlobalConfigurationImpl.java     # Plugin configuration & CasC
-├── ExplainErrorStep.java            # Pipeline step implementation
-├── BaseAIService.java               # Abstract AI service base
-├── OpenAIService.java               # OpenAI API integration
-├── GeminiService.java               # Google Gemini API integration
-├── AIService.java                   # Service factory
-├── ErrorExplainer.java              # Core error analysis logic
-├── ConsoleExplainErrorAction.java   # Console button action
-├── ConsolePageDecorator.java        # UI button visibility logic
-└── ErrorExplanationAction.java      # Build action for results
+src/main/java/io/jenkins/plugins/gemini_jenkins_analyzer/
+├── GlobalConfigurationImpl.java          # Plugin configuration & CasC
+├── AnalyzeErrorStep.java                 # Pipeline step implementation
+├── BaseAIService.java                    # Abstract AI service base
+├── OpenAIService.java                    # OpenAI API integration
+├── GeminiService.java                    # Google Gemini API integration
+├── OllamaService.java                    # Ollama local LLM integration
+├── AIService.java                        # Service factory
+├── ErrorExplainer.java                   # Core error analysis logic
+├── ConsoleAnalyzeErrorAction.java        # Console button action
+├── ConsolePageDecorator.java             # UI button visibility logic
+└── ErrorExplanationAction.java           # Build action for results
 ```
 
 ## Coding Standards
@@ -58,7 +59,7 @@ src/main/java/io/jenkins/plugins/explain_error/
 ## Testing Practices
 
 ### Test Structure
-- Unit tests in `src/test/java/io/jenkins/plugins/explain_error/`
+- Unit tests in `src/test/java/io/jenkins/plugins/gemini_jenkins_analyzer/`
 - Use JUnit 5 (`@Test`, `@WithJenkins`)
 - Mock external dependencies (AI APIs)
 - Test both success and failure scenarios
@@ -88,17 +89,17 @@ src/main/java/io/jenkins/plugins/explain_error/
 
 ### Global Configuration
 - Navigate to `Manage Jenkins` → `Configure System`
-- Find "Explain Error Plugin Configuration" section
+- Find "Gemini Jenkins Analyzer Configuration" section
 - Configure AI provider, API key, URL, and model
 
 ### Configuration as Code
 ```yaml
 unclassified:
-  explainError:
+  geminiAnalyzer:
     enableExplanation: true
-    provider: "OPENAI"  # or "GEMINI"
+    provider: "OPENAI"  # or "GEMINI" or "OLLAMA"
     apiKey: "${AI_API_KEY}"
-    model: "gpt-3.5-turbo"
+    model: "gpt-4"
 ```
 
 ### Pipeline Usage
@@ -114,7 +115,7 @@ pipeline {
     }
     post {
         failure {
-            explainError()  // Analyze failure and add explanation
+            analyzeError()  // Analyze failure and add explanation
         }
     }
 }
@@ -153,7 +154,7 @@ When adding new AI providers:
 
 Enable debug logging:
 1. Go to `Manage Jenkins` → `System Log`
-2. Add logger: `io.jenkins.plugins.explain_error`
+2. Add logger: `io.jenkins.plugins.gemini_jenkins_analyzer`
 3. Set level to `FINE` or `ALL`
 
 ## Best Practices for Contributors

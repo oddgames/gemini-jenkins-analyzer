@@ -1,6 +1,6 @@
-# Contributing to Explain Error Plugin
+# Contributing to Gemini Jenkins Analyzer
 
-Thank you for your interest in contributing to the Explain Error Plugin! 
+Thank you for your interest in contributing to the Gemini Jenkins Analyzer! 
 
 This guide will help you get started with development and contribution.
 
@@ -18,8 +18,8 @@ This guide will help you get started with development and contribution.
 
 1. **Fork and clone the repository:**
    ```bash
-   git clone https://github.com/<your-username>/explain-error-plugin.git
-   cd explain-error-plugin
+   git clone https://github.com/<your-username>/gemini-jenkins-analyzer-plugin.git
+   cd gemini-jenkins-analyzer-plugin
    ```
 
 2. **Build the plugin:**
@@ -57,14 +57,14 @@ This guide will help you get started with development and contribution.
    ```
 
 2. **Install in Jenkins:**
-   - Copy `target/explain-error.hpi` to your Jenkins instance
+   - Copy `target/gemini-jenkins-analyzer.hpi` to your Jenkins instance
    - Go to `Manage Jenkins` → `Manage Plugins` → `Advanced`
    - Upload the `.hpi` file in the "Upload Plugin" section
    - Restart Jenkins
 
 3. **Alternative: Direct file copy:**
    ```bash
-   cp target/explain-error.hpi $JENKINS_HOME/plugins/
+   cp target/gemini-jenkins-analyzer.hpi $JENKINS_HOME/plugins/
    # Restart Jenkins
    ```
 
@@ -72,13 +72,13 @@ This guide will help you get started with development and contribution.
 
 1. **Navigate to Jenkins configuration:**
    - Go to `Manage Jenkins` → `Configure System`
-   - Find "Explain Error Plugin Configuration" section
+   - Find "Gemini Jenkins Analyzer Configuration" section
 
 2. **Configure test settings:**
    - **Enable AI Error Explanation**
-   - **API Key**: Your OpenAI API key (get from [OpenAI Dashboard](https://platform.openai.com/api-keys))
-   - **API URL**: `https://api.openai.com/v1/chat/completions` (default)
-   - **Model**: `gpt-3.5-turbo` or `gpt-4`
+   - **API Key**: Your AI provider API key (get from [OpenAI Dashboard](https://platform.openai.com/api-keys) or [Google AI Studio](https://aistudio.google.com/app/apikey))
+   - **API URL**: Leave empty for default (OpenAI or Gemini)
+   - **Model**: `gpt-4`, `gemini-2.0-flash`, or your preferred model
 
 3. **Test your configuration:**
    - Click "Test Configuration" button
@@ -135,7 +135,7 @@ class AIServiceTest {
        }
        post {
            failure {
-               explainError()
+               analyzeError()
            }
        }
    }
@@ -144,7 +144,7 @@ class AIServiceTest {
 2. **Test console button:**
    - Run any job that fails
    - Go to console output
-   - Click "Explain Error" button
+   - Click "Analyze Error" button
    - Verify explanation appears
 
 ## Development Guidelines
@@ -161,13 +161,13 @@ class AIServiceTest {
 The plugin follows these patterns:
 
 ```
-src/main/java/io/jenkins/plugins/explain_error/
-├── GlobalConfigurationImpl.java     # Main plugin class
-├── ExplainErrorStep.java            # Pipeline step implementation
-├── AIService.java                   # AI communication service
-├── ErrorExplainer.java              # Error analysis logic
-├── ConsoleExplainErrorAction.java   # Console button action
-└── ErrorExplanationAction.java      # Build action for storing results
+src/main/java/io/jenkins/plugins/gemini_jenkins_analyzer/
+├── GlobalConfigurationImpl.java          # Main plugin class
+├── AnalyzeErrorStep.java                 # Pipeline step implementation
+├── AIService.java                        # AI communication service
+├── ErrorExplainer.java                   # Error analysis logic
+├── ConsoleAnalyzeErrorAction.java        # Console button action
+└── ErrorExplanationAction.java           # Build action for storing results
 ```
 
 ### Adding New Features
@@ -192,7 +192,7 @@ src/main/java/io/jenkins/plugins/explain_error/
 
 1. **In Jenkins:**
    - Go to `Manage Jenkins` → `System Log`
-   - Add logger: `io.jenkins.plugins.explain_error`
+   - Add logger: `io.jenkins.plugins.gemini_jenkins_analyzer`
    - Set level to `FINE` or `ALL`
 
 ## Pull Request Process
@@ -235,10 +235,10 @@ Use our [feature request template](.github/ISSUE_TEMPLATE/feature_request.md):
 - **Alternatives**: Alternative approaches considered
 - **Additional context**: Screenshots, examples, etc.
 
-## 🤝 Community
+## Community
 
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/jenkinsci/explain-error-plugin/discussions)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/jenkinsci/explain-error-plugin/issues)
-- 📧 **Security**: security@jenkins.io
+- **Discussions**: [GitHub Discussions](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/discussions)
+- **Issues**: [GitHub Issues](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/issues)
+- **Security**: Report security issues via [GitHub Security Advisories](https://github.com/jenkinsci/gemini-jenkins-analyzer-plugin/security/advisories)
 
-Thank you for contributing to the Explain Error Plugin! 🎉
+Thank you for contributing to the Gemini Jenkins Analyzer!

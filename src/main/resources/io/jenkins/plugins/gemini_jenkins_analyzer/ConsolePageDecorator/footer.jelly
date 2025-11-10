@@ -1,0 +1,33 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <j:if test="${it.pluginActive}">
+        <script src="${rootURL}/plugin/gemini-jenkins-analyzer/js/analyzer-error-footer.js" type="text/javascript"/>
+        <div id="analyzer-error-container" class="jenkins-hidden">
+          <l:card title="AI Error Analysis">
+            <div id="analyzer-error-spinner" class="jenkins-hidden">
+              <l:spinner text="Analyzing error logs..."/>
+            </div>
+            <pre id="analyzer-error-content" class="jenkins-!-margin-bottom-0"></pre>
+          </l:card>
+        </div>
+
+        <!-- Confirmation Dialog for existing analysis -->
+        <div id="analyzer-error-confirm-dialog" class="jenkins-hidden">
+          <l:card title="AI Error Analysis Exists">
+            <p>An AI analysis was already generated on <span id="existing-analysis-timestamp"></span>.</p>
+            <p>Do you want to view the existing analysis or generate a new one?</p>
+            <div class="jenkins-button-bar">
+              <button type="button" class="jenkins-button jenkins-button--primary jenkins-!-margin-1 eep-view-existing-button" onclick="viewExistingAnalysis()">
+                View Existing
+              </button>
+              <button type="button" class="jenkins-button jenkins-!-margin-1 eep-generate-new-button">
+                Generate New
+              </button>
+              <button type="button" class="jenkins-button jenkins-!-margin-1 eep-cancel-button" onclick="cancelAnalysis()">
+                Cancel
+              </button>
+            </div>
+          </l:card>
+        </div>
+    </j:if>
+</j:jelly>

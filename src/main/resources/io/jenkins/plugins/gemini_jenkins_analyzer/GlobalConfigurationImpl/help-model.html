@@ -1,0 +1,43 @@
+The Google Gemini model to use for error analysis and explanation.
+
+<p><strong>Recommended models by use case:</strong></p>
+
+<h4>Best for Most Users (Balanced Performance)</h4>
+<ul>
+  <li><code>gemini-2.0-flash</code> - Stable, fast, and cost-effective with excellent error analysis (recommended default)</li>
+  <li><code>gemini-2.0-flash-exp</code> - Latest experimental Flash model with improved reasoning for advanced users</li>
+  <li><code>gemini-1.5-flash</code> - Proven reliability for production environments</li>
+  <li><code>gemini-1.5-flash-002</code> - Latest stable 1.5 Flash variant with enhanced capabilities</li>
+</ul>
+
+<h4>High-Volume / Cost-Conscious</h4>
+<ul>
+  <li><code>gemini-1.5-flash-8b</code> - Fastest and cheapest, suitable for simple errors</li>
+  <li><code>gemini-2.0-flash-lite</code> - Very fast with lower cost, good for frequent builds</li>
+</ul>
+
+<h4>Complex Errors / Advanced Analysis</h4>
+<ul>
+  <li><code>gemini-1.5-pro</code> - Most capable for complex multi-step debugging and analysis</li>
+  <li><code>gemini-1.5-pro-002</code> - Latest stable Pro variant with improved reasoning</li>
+  <li><code>gemini-2.0-pro-exp</code> - Experimental Pro model with cutting-edge capabilities</li>
+  <li><code>gemini-thinking-exp-1219</code> - Extended thinking mode for particularly complex issues</li>
+</ul>
+
+<h4>Other Available Models</h4>
+<ul>
+  <li><code>gemini-exp-1206</code> - Experimental snapshot with latest features</li>
+  <li>More models at <a href="https://ai.google.dev/gemini-api/docs/models" target="_blank">Google AI Studio</a></li>
+</ul>
+
+<p><strong>Tips for Selecting a Model:</strong></p>
+<ul>
+  <li>Start with <code>gemini-2.0-flash</code> (default) for the best balance of stability, speed, cost, and quality</li>
+  <li>Use Flash models (2.0-flash, 1.5-flash) for typical build failures, compilation errors, and test failures</li>
+  <li>Use Pro models (1.5-pro, 1.5-pro-002) for complex integration issues, obscure errors, or multi-service debugging</li>
+  <li>Use experimental models (*-exp) only if you want cutting-edge features and can tolerate potential API changes</li>
+  <li>Consider 8b or lite variants for high-volume CI/CD pipelines to reduce API costs</li>
+  <li>Monitor your API usage and costs; adjust model choice based on build frequency and complexity</li>
+</ul>
+
+<p><em>Note: Model availability and performance may vary. Check the official documentation for the latest information.</em></p>
