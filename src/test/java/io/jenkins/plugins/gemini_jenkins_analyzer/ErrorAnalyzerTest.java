@@ -27,7 +27,7 @@ class ErrorAnalyzerTest {
 
         // Should not throw exception when disabled
         assertDoesNotThrow(() -> {
-            errorAnalyzer.analyzeError(build, listener, "ERROR", null, 100);
+            errorAnalyzer.analyzeError(build, listener, "ERROR", null, 100, 3);
         });
     }
 
@@ -46,7 +46,7 @@ class ErrorAnalyzerTest {
 
         // Should not throw exception with null API key
         assertDoesNotThrow(() -> {
-            errorAnalyzer.analyzeError(build, listener, "ERROR", null, 100);
+            errorAnalyzer.analyzeError(build, listener, "ERROR", null, 100, 3);
         });
     }
 

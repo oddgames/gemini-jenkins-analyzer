@@ -9,4 +9,9 @@
              description="Maximum number of matching lines to analyze (default: 100). Set to 0 for unlimited.">
         <f:number min="0" default="100" />
     </f:entry>
+
+    <f:entry title="Context Lines" field="contextLines"
+             description="Number of lines to include before and after each error for context (default: 3). Set to 0 to only include error lines.">
+        <f:number min="0" default="3" />
+    </f:entry>
 </j:jelly>

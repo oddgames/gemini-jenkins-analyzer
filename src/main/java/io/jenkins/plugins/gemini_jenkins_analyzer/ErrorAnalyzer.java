@@ -17,7 +17,7 @@ public class ErrorAnalyzer {
 
     private static final Logger LOGGER = Logger.getLogger(ErrorAnalyzer.class.getName());
 
-    public void analyzeError(Run<?, ?> run, TaskListener listener, String logPattern, String errorPatterns, int maxLines) {
+    public void analyzeError(Run<?, ?> run, TaskListener listener, String logPattern, String errorPatterns, int maxLines, int contextLines) {
         String jobInfo = run != null ? ("[" + run.getParent().getFullName() + " #" + run.getNumber() + "]") : "[unknown]";
         try {
             GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
@@ -28,8 +28,8 @@ public class ErrorAnalyzer {
                 return;
             }
 
-            // Extract error logs - errorPatterns parameter takes priority over config
-            String errorLogs = extractErrorLogs(run, logPattern, errorPatterns, maxLines);
+            // Extract error logs with context - errorPatterns parameter takes priority over config
+            String errorLogs = extractErrorLogsWithContext(run, logPattern, errorPatterns, maxLines, contextLines);
 
             if (StringUtils.isBlank(errorLogs)) {
                 listener.getLogger().println("No error logs found to explain.");
@@ -53,9 +53,12 @@ public class ErrorAnalyzer {
         }
     }
 
-    private String extractErrorLogs(Run<?, ?> run, String logPattern, String errorPatterns, int maxLines) throws IOException {
-        LOGGER.info("=== ERROR LOG EXTRACTION DEBUG ===");
-
+    /**
+     * Extract error logs with surrounding context.
+     * Captures contextLines before and after each error, forming error blocks.
+     * An error block ends when we haven't seen an error for contextLines.
+     */
+    private String extractErrorLogsWithContext(Run<?, ?> run, String logPattern, String errorPatterns, int maxLines, int contextLines) throws IOException {
         List<String> patternsToUse = new ArrayList<>();
 
         // Priority 1: errorPatterns parameter (newline-separated)
@@ -66,7 +69,6 @@ public class ErrorAnalyzer {
                     patternsToUse.add(pattern.trim());
                 }
             }
-            LOGGER.info("Using errorPatterns parameter with " + patternsToUse.size() + " patterns");
         } else {
             // Priority 2: Check job property
             ErrorPatternProperty property = run.getParent().getProperty(ErrorPatternProperty.class);
@@ -77,19 +79,140 @@ public class ErrorAnalyzer {
                         patternsToUse.add(pattern.trim());
                     }
                 }
-                LOGGER.info("Using job property patterns with " + patternsToUse.size() + " patterns");
             }
         }
 
-        if (!patternsToUse.isEmpty() && LOGGER.isLoggable(java.util.logging.Level.FINE)) {
-            LOGGER.fine("First pattern: " + patternsToUse.get(0));
+        // If no patterns configured, return the last maxLines unfiltered
+        if (patternsToUse.isEmpty()) {
+            List<String> logLines = run.getLog(maxLines);
+            return String.join("\n", logLines);
         }
 
-        LOGGER.info("Patterns to use count: " + patternsToUse.size());
+        // Compile all patterns
+        List<Pattern> compiledPatterns = new ArrayList<>();
+        for (String patternStr : patternsToUse) {
+            if (!StringUtils.isBlank(patternStr)) {
+                compiledPatterns.add(Pattern.compile(patternStr.trim(), Pattern.CASE_INSENSITIVE));
+            }
+        }
+
+        if (compiledPatterns.isEmpty()) {
+            List<String> logLines = run.getLog(maxLines);
+            return String.join("\n", logLines);
+        }
+
+        // Get all log lines
+        int fetchLimit = Math.max(maxLines * 10, 10000);
+        List<String> allLogLines = run.getLog(fetchLimit);
+
+        // Build error blocks with context
+        List<String> outputLines = new ArrayList<>();
+        List<String> contextBuffer = new ArrayList<>();
+        int linesSinceLastError = contextLines + 1; // Start with no active block
+        int errorCount = 0;
+        int totalLinesAdded = 0;
+
+        for (int i = 0; i < allLogLines.size() && totalLinesAdded < maxLines; i++) {
+            String line = allLogLines.get(i);
+            boolean isError = false;
+
+            // Check if this line matches any error pattern
+            for (Pattern pattern : compiledPatterns) {
+                if (pattern.matcher(line).find()) {
+                    isError = true;
+                    errorCount++;
+                    break;
+                }
+            }
+
+            if (isError) {
+                // Found an error line
+                // If starting a new block, add buffered context first
+                if (linesSinceLastError > contextLines && !contextBuffer.isEmpty()) {
+                    // Add separator for new block
+                    if (!outputLines.isEmpty()) {
+                        outputLines.add("");
+                        outputLines.add("--- Error Block " + (errorCount > 1 ? "" : "---"));
+                        outputLines.add("");
+                        totalLinesAdded += 3;
+                    }
+                    // Add context before error
+                    int contextToAdd = Math.min(contextBuffer.size(), contextLines);
+                    for (int j = Math.max(0, contextBuffer.size() - contextToAdd); j < contextBuffer.size() && totalLinesAdded < maxLines; j++) {
+                        outputLines.add(contextBuffer.get(j));
+                        totalLinesAdded++;
+                    }
+                }
+
+                // Add the error line with marker
+                if (totalLinesAdded < maxLines) {
+                    outputLines.add(">>> ERROR: " + line);
+                    totalLinesAdded++;
+                }
+                linesSinceLastError = 0;
+                contextBuffer.clear();
+            } else {
+                // Non-error line
+                linesSinceLastError++;
+
+                if (linesSinceLastError <= contextLines) {
+                    // Within context window after error - add directly to output
+                    if (totalLinesAdded < maxLines) {
+                        outputLines.add(line);
+                        totalLinesAdded++;
+                    }
+                } else {
+                    // Outside context window - buffer for potential next error
+                    contextBuffer.add(line);
+                    // Keep buffer size limited
+                    if (contextBuffer.size() > contextLines) {
+                        contextBuffer.remove(0);
+                    }
+                }
+            }
+        }
+
+        if (outputLines.isEmpty()) {
+            return "";
+        }
+
+        // Add explanation header
+        StringBuilder result = new StringBuilder();
+        result.append("=== ERROR ANALYSIS ===\n");
+        result.append("Note: Lines marked with '>>> ERROR:' matched configured error patterns.\n");
+        result.append("Context of ").append(contextLines).append(" lines is shown before and after each error.\n");
+        result.append("\n");
+        result.append(String.join("\n", outputLines));
+
+        return result.toString();
+    }
+
+    private String extractErrorLogs(Run<?, ?> run, String logPattern, String errorPatterns, int maxLines) throws IOException {
+        List<String> patternsToUse = new ArrayList<>();
+
+        // Priority 1: errorPatterns parameter (newline-separated)
+        if (!StringUtils.isBlank(errorPatterns)) {
+            String[] patternLines = errorPatterns.split("\\r?\\n");
+            for (String pattern : patternLines) {
+                if (!StringUtils.isBlank(pattern)) {
+                    patternsToUse.add(pattern.trim());
+                }
+            }
+        } else {
+            // Priority 2: Check job property
+            ErrorPatternProperty property = run.getParent().getProperty(ErrorPatternProperty.class);
+            if (property != null && !StringUtils.isBlank(property.getErrorPatterns())) {
+                String[] patternLines = property.getErrorPatterns().split("\\r?\\n");
+                for (String pattern : patternLines) {
+                    if (!StringUtils.isBlank(pattern)) {
+                        patternsToUse.add(pattern.trim());
+                    }
+                }
+            }
+        }
 
         // If no patterns configured, return the last maxLines unfiltered
         if (patternsToUse.isEmpty()) {
-            LOGGER.warning("No patterns configured! Returning unfiltered logs.");
             List<String> logLines = run.getLog(maxLines);
             return String.join("\n", logLines);
         }
@@ -128,9 +251,6 @@ public class ErrorAnalyzer {
 
         // Reverse to restore chronological order (oldest to newest)
         Collections.reverse(matchedLines);
-
-        LOGGER.info("Total log lines scanned: " + allLogLines.size());
-        LOGGER.info("Matched lines: " + matchedLines.size());
 
         return String.join("\n", matchedLines);
     }

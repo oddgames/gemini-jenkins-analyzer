@@ -20,12 +20,14 @@ public class AnalyzeErrorStep extends Step {
     private String logPattern;
     private String errorPatterns;
     private int maxLines;
+    private int contextLines;
 
     @DataBoundConstructor
     public AnalyzeErrorStep() {
         this.logPattern = "";
         this.errorPatterns = "";
         this.maxLines = 100;
+        this.contextLines = 3;
     }
 
     public String getLogPattern() {
@@ -53,6 +55,15 @@ public class AnalyzeErrorStep extends Step {
     @DataBoundSetter
     public void setMaxLines(int maxLines) {
         this.maxLines = maxLines > 0 ? maxLines : 100;
+    }
+
+    public int getContextLines() {
+        return contextLines;
+    }
+
+    @DataBoundSetter
+    public void setContextLines(int contextLines) {
+        this.contextLines = contextLines >= 0 ? contextLines : 3;
     }
 
     @Override
@@ -95,7 +106,7 @@ public class AnalyzeErrorStep extends Step {
             TaskListener listener = getContext().get(TaskListener.class);
 
             ErrorAnalyzer explainer = new ErrorAnalyzer();
-            explainer.analyzeError(run, listener, step.getLogPattern(), step.getErrorPatterns(), step.getMaxLines());
+            explainer.analyzeError(run, listener, step.getLogPattern(), step.getErrorPatterns(), step.getMaxLines(), step.getContextLines());
 
             return null;
         }
