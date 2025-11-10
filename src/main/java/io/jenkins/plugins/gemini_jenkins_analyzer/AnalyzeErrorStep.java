@@ -18,11 +18,13 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class AnalyzeErrorStep extends Step {
 
     private String logPattern;
+    private String errorPatterns;
     private int maxLines;
 
     @DataBoundConstructor
     public AnalyzeErrorStep() {
         this.logPattern = "";
+        this.errorPatterns = "";
         this.maxLines = 100;
     }
 
@@ -33,6 +35,15 @@ public class AnalyzeErrorStep extends Step {
     @DataBoundSetter
     public void setLogPattern(String logPattern) {
         this.logPattern = logPattern != null ? logPattern : "";
+    }
+
+    public String getErrorPatterns() {
+        return errorPatterns;
+    }
+
+    @DataBoundSetter
+    public void setErrorPatterns(String errorPatterns) {
+        this.errorPatterns = errorPatterns != null ? errorPatterns : "";
     }
 
     public int getMaxLines() {
@@ -84,7 +95,7 @@ public class AnalyzeErrorStep extends Step {
             TaskListener listener = getContext().get(TaskListener.class);
 
             ErrorAnalyzer explainer = new ErrorAnalyzer();
-            explainer.analyzeError(run, listener, step.getLogPattern(), step.getMaxLines());
+            explainer.analyzeError(run, listener, step.getLogPattern(), step.getErrorPatterns(), step.getMaxLines());
 
             return null;
         }

@@ -55,17 +55,12 @@ public abstract class BaseAIService {
 
         // Use PromptTemplate for dynamic prompt creation
         PromptTemplate promptTemplate = PromptTemplate.from(
-            "You are an expert Jenkins administrator and software engineer. "
-            + "Please analyze the following Jenkins build error logs and provide a clear, "
-            + "actionable analysis of what went wrong and how to fix it:\n\n"
-            + "ERROR LOGS:\n"
+            "Senior dev: analyze this failure. Skip obvious stuff.\n\n"
             + "{{errorLogs}}\n\n"
-            + "Please provide:\n"
-            + "1. A concise summary (2-3 sentences) of what caused the error\n"
-            + "2. Specific, actionable steps to resolve the issue\n"
-            + "3. Relevant best practices to prevent similar issues\n\n"
-            + "Keep your response concise and focused on actionable solutions. "
-            + "Use plain text formatting with clear section headings."
+            + "1. Root cause (environment/dependency/config issues only)\n"
+            + "2. Fix (1-2 sentences max)\n"
+            + "3. Prevention (if non-trivial)\n\n"
+            + "MAX 5 LINES TOTAL. Plain text only."
         );
 
         Map<String, Object> variables = new HashMap<>();

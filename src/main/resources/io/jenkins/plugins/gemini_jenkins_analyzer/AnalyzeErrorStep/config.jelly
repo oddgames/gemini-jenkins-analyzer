@@ -1,12 +1,12 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="Log Pattern" field="logPattern" 
-             description="Regular expression pattern to match error lines in the build log. Leave empty to analyze all lines.">
-        <f:textbox />
+    <f:entry title="Error Patterns" field="errorPatterns"
+             description="Regular expressions to filter error logs (one per line). Only log lines matching these patterns will be sent to the AI. Leave empty to analyze all logs.">
+        <f:textarea rows="10" style="font-family: monospace; width: 100%;" />
     </f:entry>
-    
-    <f:entry title="Max Lines" field="maxLines" 
-             description="Maximum number of lines to analyze (default: 100). Set to 0 for unlimited.">
+
+    <f:entry title="Max Lines" field="maxLines"
+             description="Maximum number of matching lines to analyze (default: 100). Set to 0 for unlimited.">
         <f:number min="0" default="100" />
     </f:entry>
 </j:jelly>

@@ -2,6 +2,29 @@
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
     <j:if test="${it.pluginActive}">
         <script src="${rootURL}/plugin/gemini-jenkins-analyzer/js/analyzer-error-footer.js" type="text/javascript"/>
+
+        <!-- Error Patterns Configuration -->
+        <div id="analyzer-error-patterns-container" class="jenkins-hidden">
+          <l:card title="Error Pattern Configuration">
+            <p style="margin-bottom: 10px;">Enter regular expressions to filter error logs (one per line). Leave empty to analyze all logs.</p>
+            <textarea id="analyzer-error-patterns" rows="10" style="font-family: monospace; width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="(?i)\bError\s*:\s*&#10;(?i)\bException\b&#10;(?i)^\s*\*\*\s*BUILD FAILED\s*\*\*"></textarea>
+            <div class="jenkins-button-bar" style="margin-top: 10px;">
+              <button type="button" class="jenkins-button jenkins-button--primary eep-start-analysis-button">
+                Start Analysis
+              </button>
+              <button type="button" class="jenkins-button eep-cancel-patterns-button">
+                Cancel
+              </button>
+            </div>
+          </l:card>
+        </div>
+
+        <div id="analyzer-error-logs-container" class="jenkins-hidden">
+          <l:card title="Error Logs Being Analyzed">
+            <pre id="analyzer-error-logs-content" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px;" class="jenkins-!-margin-bottom-0"></pre>
+          </l:card>
+        </div>
+
         <div id="analyzer-error-container" class="jenkins-hidden">
           <l:card title="AI Error Analysis">
             <div id="analyzer-error-spinner" class="jenkins-hidden">

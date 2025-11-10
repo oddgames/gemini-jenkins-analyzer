@@ -1,0 +1,24 @@
+<div>
+  <p>
+    Regular expressions to filter error logs (one per line). Only log lines matching these patterns will be sent to the AI for analysis.
+  </p>
+  <p>
+    <strong>Priority:</strong>
+  </p>
+  <ol>
+    <li>If specified here, these patterns will be used</li>
+    <li>Otherwise, patterns from global configuration will be used</li>
+    <li>Otherwise, the single "Log Pattern" field will be used</li>
+    <li>If none are specified, all logs will be analyzed</li>
+  </ol>
+  <p>
+    <strong>Example Unity patterns:</strong>
+  </p>
+  <pre>(?i)\bError\s*:\s*
+(?i)\bException\b
+(?i)^\s*\*\*\s*BUILD FAILED\s*\*\*
+(?i)error:\s*[^\s]</pre>
+  <p>
+    Patterns are case-insensitive by default when using (?i) flag.
+  </p>
+</div>

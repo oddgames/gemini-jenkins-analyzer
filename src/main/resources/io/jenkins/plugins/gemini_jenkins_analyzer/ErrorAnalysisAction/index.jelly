@@ -4,8 +4,12 @@
         <st:include it="${it.run}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>AI Error Explanation</h1>
-            
-            <l:card title="Generated on: ${it.formattedTimestamp}">
+
+            <l:card title="Error Logs Sent to AI">
+                <pre style="white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 10px; border-radius: 4px;" class="jenkins-!-margin-bottom-0">${it.originalErrorLogs}</pre>
+            </l:card>
+
+            <l:card title="AI Analysis (Generated on: ${it.formattedTimestamp})">
                 <pre style="white-space: pre-wrap; word-wrap: break-word;" class="jenkins-!-margin-bottom-0">${it.analysis}</pre>
             </l:card>
         </l:main-panel>

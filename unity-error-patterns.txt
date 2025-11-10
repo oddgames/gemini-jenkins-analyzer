@@ -1,0 +1,22 @@
+(?i)\bError\s*:\s*
+(?i)\bCompilerError\b
+(?i)\bBuildFailedException\b
+(?i)\bUnityException\b
+(?i)Assets/.*\.cs\(\d+,\d+\):\s*error
+(?i)\bException\b
+(?i)^\s*\*\*\s*BUILD FAILED\s*\*\*
+(?i)ld:\s*error:
+(?i)clang:\s*error:
+(?i)error:\s*(?:linker command failed|Build input file cannot be found)
+(?i)❌\s*.*error
+(?i)\berror:\s*[^\s]
+(?i)^BUILD FAILED
+(?i)^FAILURE:.*Build failed
+(?i)^>\s*Task\s+\S+\s+FAILED$
+(?i)^Execution failed for task
+(?i)\*\s*What went wrong:
+(?i)error:\s*package\s+\S+\s+does not exist
+(?i)error:\s*cannot find symbol
+(?i)^make:\s+\*\*\*.*Error\s+\d+
+(?i)^make\[\d+\]:\s+\*\*\*.*Error\s+\d+
+(?i)^ninja:\s+build stopped:

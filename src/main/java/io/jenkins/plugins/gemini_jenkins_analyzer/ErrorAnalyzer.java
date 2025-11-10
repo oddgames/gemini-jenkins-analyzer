@@ -17,15 +17,10 @@ public class ErrorAnalyzer {
 
     private static final Logger LOGGER = Logger.getLogger(ErrorAnalyzer.class.getName());
 
-    public void analyzeError(Run<?, ?> run, TaskListener listener, String logPattern, int maxLines) {
+    public void analyzeError(Run<?, ?> run, TaskListener listener, String logPattern, String errorPatterns, int maxLines) {
         String jobInfo = run != null ? ("[" + run.getParent().getFullName() + " #" + run.getNumber() + "]") : "[unknown]";
         try {
             GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
-
-            if (!config.isEnableAnalysis()) {
-                listener.getLogger().println("AI error analysis is disabled in global configuration.");
-                return;
-            }
 
             if (config.getApiKey() == null || StringUtils.isBlank(config.getApiKey().getPlainText())) {
                 listener.getLogger()
@@ -33,8 +28,8 @@ public class ErrorAnalyzer {
                 return;
             }
 
-            // Extract error logs
-            String errorLogs = extractErrorLogs(run, logPattern, maxLines);
+            // Extract error logs - errorPatterns parameter takes priority over config
+            String errorLogs = extractErrorLogs(run, logPattern, errorPatterns, maxLines);
 
             if (StringUtils.isBlank(errorLogs)) {
                 listener.getLogger().println("No error logs found to explain.");
@@ -58,21 +53,43 @@ public class ErrorAnalyzer {
         }
     }
 
-    private String extractErrorLogs(Run<?, ?> run, String logPattern, int maxLines) throws IOException {
-        GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
-        List<String> configuredPatterns = config.getErrorPatterns();
+    private String extractErrorLogs(Run<?, ?> run, String logPattern, String errorPatterns, int maxLines) throws IOException {
+        LOGGER.info("=== ERROR LOG EXTRACTION DEBUG ===");
 
-        // Determine which patterns to use: global config patterns take priority
         List<String> patternsToUse = new ArrayList<>();
-        if (configuredPatterns != null && !configuredPatterns.isEmpty()) {
-            patternsToUse.addAll(configuredPatterns);
-        } else if (!StringUtils.isBlank(logPattern)) {
-            // Fall back to the passed-in pattern if no global patterns configured
-            patternsToUse.add(logPattern);
+
+        // Priority 1: errorPatterns parameter (newline-separated)
+        if (!StringUtils.isBlank(errorPatterns)) {
+            String[] patternLines = errorPatterns.split("\\r?\\n");
+            for (String pattern : patternLines) {
+                if (!StringUtils.isBlank(pattern)) {
+                    patternsToUse.add(pattern.trim());
+                }
+            }
+            LOGGER.info("Using errorPatterns parameter with " + patternsToUse.size() + " patterns");
+        } else {
+            // Priority 2: Check job property
+            ErrorPatternProperty property = run.getParent().getProperty(ErrorPatternProperty.class);
+            if (property != null && !StringUtils.isBlank(property.getErrorPatterns())) {
+                String[] patternLines = property.getErrorPatterns().split("\\r?\\n");
+                for (String pattern : patternLines) {
+                    if (!StringUtils.isBlank(pattern)) {
+                        patternsToUse.add(pattern.trim());
+                    }
+                }
+                LOGGER.info("Using job property patterns with " + patternsToUse.size() + " patterns");
+            }
         }
 
-        // If no patterns configured at all, return the last maxLines
+        if (!patternsToUse.isEmpty() && LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+            LOGGER.fine("First pattern: " + patternsToUse.get(0));
+        }
+
+        LOGGER.info("Patterns to use count: " + patternsToUse.size());
+
+        // If no patterns configured, return the last maxLines unfiltered
         if (patternsToUse.isEmpty()) {
+            LOGGER.warning("No patterns configured! Returning unfiltered logs.");
             List<String> logLines = run.getLog(maxLines);
             return String.join("\n", logLines);
         }
@@ -112,6 +129,9 @@ public class ErrorAnalyzer {
         // Reverse to restore chronological order (oldest to newest)
         Collections.reverse(matchedLines);
 
+        LOGGER.info("Total log lines scanned: " + allLogLines.size());
+        LOGGER.info("Matched lines: " + matchedLines.size());
+
         return String.join("\n", matchedLines);
     }
 
@@ -136,7 +156,7 @@ public class ErrorAnalyzer {
             }
 
             // Extract error logs using the same logic as the pipeline step
-            String errorLogs = extractErrorLogs(run, null, maxLines);
+            String errorLogs = extractErrorLogs(run, null, null, maxLines);
 
             if (StringUtils.isBlank(errorLogs)) {
                 LOGGER.warning("No error logs found to explain");
@@ -194,5 +214,17 @@ public class ErrorAnalyzer {
             e.printStackTrace();
             return "Failed to explain error: " + e.getMessage();
         }
+    }
+
+    /**
+     * Extracts and returns filtered error logs based on configured patterns.
+     * Used to show users what logs will be sent to the AI before analysis.
+     *
+     * @param run the Jenkins run to extract logs from
+     * @param maxLines maximum number of matching lines to return
+     * @return filtered error logs as a string, or empty string if no matches
+     */
+    public String extractFilteredLogs(Run<?, ?> run, int maxLines) throws IOException {
+        return extractErrorLogs(run, null, null, maxLines);
     }
 }

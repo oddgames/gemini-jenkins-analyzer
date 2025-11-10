@@ -94,6 +94,33 @@ public class ConsoleAnalyzeErrorAction implements Action {
     }
 
     /**
+     * AJAX endpoint to get filtered error logs before sending to AI.
+     * Returns the filtered logs based on configured patterns.
+     */
+    @RequirePOST
+    public void doGetFilteredLogs(StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
+        try {
+            run.checkPermission(hudson.model.Item.READ);
+
+            int maxLines = 200;
+            String maxLinesParam = req.getParameter("maxLines");
+            if (maxLinesParam != null) {
+                try { maxLines = Integer.parseInt(maxLinesParam); } catch (NumberFormatException ignore) {}
+            }
+
+            // Extract filtered logs using the same logic as analysis
+            ErrorAnalyzer analyzer = new ErrorAnalyzer();
+            String filteredLogs = analyzer.extractFilteredLogs(run, maxLines);
+
+            writeJsonResponse(rsp, filteredLogs != null ? filteredLogs : "");
+        } catch (Exception e) {
+            LOGGER.severe("Error getting filtered logs: " + e.getMessage());
+            rsp.setStatus(500);
+            writeJsonResponse(rsp, "Error: " + e.getMessage());
+        }
+    }
+
+    /**
      * AJAX endpoint to check if an analysis already exists.
      * Returns JSON with hasAnalysis boolean and timestamp if it exists.
      */

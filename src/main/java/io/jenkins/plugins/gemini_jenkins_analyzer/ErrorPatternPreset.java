@@ -19,6 +19,9 @@ public enum ErrorPatternPreset {
             "(?i)\\bUnityException\\b",
             "(?i)Assets/.*\\.cs\\(\\d+,\\d+\\):\\s*error",
 
+            // Generic exception catcher
+            "(?i)\\bException\\b",
+
             // Xcode errors (strict)
             "(?i)^\\s*\\*\\*\\s*BUILD FAILED\\s*\\*\\*",
             "(?i)ld:\\s*error:",

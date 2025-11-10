@@ -7,11 +7,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Move containers to correct position
+  const logsContainer = document.getElementById('analyzer-error-logs-container');
   const container = document.getElementById('analyzer-error-container');
   const consoleOutput =
     document.querySelector('#out') ||
     document.querySelector('pre.console-output') ||
     document.querySelector('pre');
+
+  if (logsContainer && consoleOutput && consoleOutput.parentNode) {
+    try {
+      if (logsContainer.parentNode !== consoleOutput.parentNode &&
+          !consoleOutput.contains(logsContainer) &&
+          !logsContainer.contains(consoleOutput)) {
+        consoleOutput.parentNode.insertBefore(logsContainer, consoleOutput);
+      }
+    } catch (e) {
+      console.warn('Could not move analyzer-error-logs-container:', e);
+    }
+  }
 
   if (container && consoleOutput && consoleOutput.parentNode) {
     try {
@@ -235,7 +248,8 @@ function hideConfirmationDialog() {
 
 function sendAnalyzeRequest(forceNew = false) {
   const basePath = window.location.pathname.replace(/\/console(Full)?$/, '');
-  const url = basePath + '/console-analyzer-error/explainConsoleError';
+  const analyzeUrl = basePath + '/console-analyzer-error/explainConsoleError';
+  const logsUrl = basePath + '/console-analyzer-error/getFilteredLogs';
 
   const headers = crumb.wrap({
     "Content-Type": "application/x-www-form-urlencoded",
@@ -246,7 +260,29 @@ function sendAnalyzeRequest(forceNew = false) {
 
   showSpinner();
 
-  fetch(url, {
+  // First, fetch and display the filtered logs
+  fetch(logsUrl, {
+    method: "POST",
+    headers: headers,
+    body: ""
+  })
+  .then(response => response.text())
+  .then(responseText => {
+    try {
+      const filteredLogs = JSON.parse(responseText);
+      if (filteredLogs && filteredLogs.trim()) {
+        showErrorLogs(filteredLogs);
+      }
+    } catch (e) {
+      console.warn('Could not parse filtered logs:', e);
+    }
+  })
+  .catch(error => {
+    console.warn('Could not fetch filtered logs:', error);
+  });
+
+  // Then send the analysis request
+  fetch(analyzeUrl, {
     method: "POST",
     headers: headers,
     body: body
@@ -296,5 +332,27 @@ function clearAnalysisContent() {
   const content = document.getElementById('analyzer-error-content');
   if (content) {
     content.textContent = '';
+  }
+  hideErrorLogsContainer();
+  const logsContent = document.getElementById('analyzer-error-logs-content');
+  if (logsContent) {
+    logsContent.textContent = '';
+  }
+}
+
+function showErrorLogs(logs) {
+  const logsContainer = document.getElementById('analyzer-error-logs-container');
+  const logsContent = document.getElementById('analyzer-error-logs-content');
+
+  if (logsContainer && logsContent) {
+    logsContainer.classList.remove('jenkins-hidden');
+    logsContent.textContent = logs;
+  }
+}
+
+function hideErrorLogsContainer() {
+  const logsContainer = document.getElementById('analyzer-error-logs-container');
+  if (logsContainer) {
+    logsContainer.classList.add('jenkins-hidden');
   }
 }
