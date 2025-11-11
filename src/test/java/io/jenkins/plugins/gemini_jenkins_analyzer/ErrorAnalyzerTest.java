@@ -58,7 +58,6 @@ class ErrorAnalyzerTest {
         // Setup valid configuration
         config.setEnableAnalysis(true);
         config.setApiKey(Secret.fromString("test-api-key"));
-        config.setProvider(AIProvider.GEMINI);
         config.setModel("gemini-2.0-flash");
 
         FreeStyleProject project = jenkins.createFreeStyleProject();

@@ -57,10 +57,6 @@ class GlobalConfigurationImplTest {
         assertFalse(config.isEnableAnalysis());
         config.setEnableAnalysis(true);
         assertTrue(config.isEnableAnalysis());
-
-        // Test provider
-        config.setProvider(AIProvider.GEMINI);
-        assertEquals(AIProvider.GEMINI, config.getProvider());
     }
 
     @Test
@@ -85,16 +81,12 @@ class GlobalConfigurationImplTest {
         config.setModel("");
         assertEquals("", config.getRawModel());
         assertEquals("", config.getModel());
-
-        // Null provider defaults to GEMINI
-        config.setProvider(null);
-        assertEquals(AIProvider.GEMINI, config.getProvider());
     }
 
     @Test
     void testConfiguration_MissingApiKey(JenkinsRule jenkins) {
         GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
-        FormValidation result = config.doTestConfiguration("", "GEMINI", "", "gemini-2.0-flash");
+        FormValidation result = config.doTestConfiguration("", "", "gemini-2.0-flash");
 
         assertEquals(FormValidation.Kind.ERROR, result.kind);
         assertTrue(result.getMessage().contains("API Key is required"),
@@ -104,26 +96,17 @@ class GlobalConfigurationImplTest {
     @Test
     void testConfiguration_NullApiKey(JenkinsRule jenkins) {
         GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
-        FormValidation result = config.doTestConfiguration(null, "GEMINI", "", "gemini-2.0-flash");
+        FormValidation result = config.doTestConfiguration(null, "", "gemini-2.0-flash");
 
         assertEquals(FormValidation.Kind.ERROR, result.kind);
         assertTrue(result.getMessage().contains("API Key is required"));
     }
 
     @Test
-    void testConfiguration_InvalidProvider(JenkinsRule jenkins) {
-        GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
-        FormValidation result = config.doTestConfiguration("test-key", "INVALID_PROVIDER", "", "gemini-2.0-flash");
-
-        assertEquals(FormValidation.Kind.ERROR, result.kind);
-        assertTrue(result.getMessage().contains("Invalid provider"));
-    }
-
-    @Test
     void testConfiguration_WithInvalidApiKey(JenkinsRule jenkins) {
         GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
         // This will fail to connect but shouldn't crash
-        FormValidation result = config.doTestConfiguration("invalid-key-123", "GEMINI", "", "gemini-2.0-flash");
+        FormValidation result = config.doTestConfiguration("invalid-key-123", "", "gemini-2.0-flash");
 
         // Should return an error (not crash)
         assertNotNull(result);
@@ -147,7 +130,6 @@ class GlobalConfigurationImplTest {
 
         FormValidation result = config.doTestConfiguration(
             apiKey,
-            "GEMINI",
             "", // Use default API URL
             "gemini-2.0-flash"
         );
@@ -163,19 +145,16 @@ class GlobalConfigurationImplTest {
         GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
 
         config.setApiKey(Secret.fromString("test-key"));
-        config.setProvider(AIProvider.GEMINI);
         config.setModel("test-model");
         config.setEnableAnalysis(false);
 
         config.save();
 
         assertEquals("test-key", config.getApiKey().getPlainText());
-        assertEquals(AIProvider.GEMINI, config.getProvider());
         assertEquals("test-model", config.getModel());
         assertFalse(config.isEnableAnalysis());
 
         config.load();
-        assertEquals(AIProvider.GEMINI, config.getProvider());
     }
 
     @Test
@@ -183,7 +162,7 @@ class GlobalConfigurationImplTest {
         GlobalConfigurationImpl config = GlobalConfigurationImpl.get();
         String displayName = config.getDisplayName();
         assertNotNull(displayName);
-        assertEquals("Analyze Error Plugin Configuration", displayName);
+        assertEquals("Gemini Jenkins Analyzer Configuration", displayName);
     }
 
     @Test

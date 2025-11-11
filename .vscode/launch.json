@@ -7,6 +7,13 @@
             "hostName": "localhost",
             "port": "8000",
             "preLaunchTask": "mvnDebug"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Build and Deploy to Jenkins",
+            "preLaunchTask": "Deploy to Jenkins",
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }

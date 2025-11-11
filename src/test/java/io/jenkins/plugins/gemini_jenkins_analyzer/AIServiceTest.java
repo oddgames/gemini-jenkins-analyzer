@@ -25,7 +25,6 @@ class AIServiceTest {
         config = GlobalConfigurationImpl.get();
 
         // Set minimal test values
-        config.setProvider(AIProvider.GEMINI);
         config.setApiUrl(null);
         config.setModel(null);
         config.setApiKey(Secret.fromString("test-api-key"));
@@ -50,10 +49,8 @@ class AIServiceTest {
     @Test
     void testGlobalConfigurationIntegration() {
         // Verify that changes to Jenkins global configuration are reflected in the service
-        config.setProvider(AIProvider.GEMINI);
         config.setModel("gemini-2.0-flash");
 
-        assertEquals(AIProvider.GEMINI, config.getProvider());
         assertEquals("gemini-2.0-flash", config.getModel());
     }
 

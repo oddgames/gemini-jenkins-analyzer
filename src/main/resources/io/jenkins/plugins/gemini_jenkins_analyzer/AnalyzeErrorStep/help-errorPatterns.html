@@ -3,13 +3,12 @@
     Regular expressions to filter error logs (one per line). Only log lines matching these patterns will be sent to the AI for analysis.
   </p>
   <p>
-    <strong>Priority:</strong>
+    <strong>Priority order:</strong>
   </p>
   <ol>
-    <li>If specified here, these patterns will be used</li>
-    <li>Otherwise, patterns from global configuration will be used</li>
-    <li>Otherwise, the single "Log Pattern" field will be used</li>
-    <li>If none are specified, all logs will be analyzed</li>
+    <li>If specified here (in the pipeline step), these patterns will be used</li>
+    <li>Otherwise, patterns from the job's Error Pattern Configuration will be used</li>
+    <li>If none are specified, all logs will be analyzed without filtering</li>
   </ol>
   <p>
     <strong>Example Unity patterns:</strong>

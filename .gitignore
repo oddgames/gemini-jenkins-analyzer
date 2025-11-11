@@ -13,3 +13,15 @@ work
 .settings
 .classpath
 .project
+
+# Environment variables
+.env
+
+# Jenkins CLI
+jenkins-cli.jar
+
+# Temporary job XML files
+*-job.xml
+
+# Test data
+test-data/

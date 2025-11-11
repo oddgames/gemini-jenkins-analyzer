@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(mvn test:*)",
-      "Bash(mvn clean package:*)"
+      "Bash(mvn clean package:*)",
+      "Bash(source .env)",
+      "Bash([ -f jenkins-cli.jar ])",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(java -jar jenkins-cli.jar:*)",
+      "Bash(java -jar jenkins-cli.jar -s:*)",
+      "Bash(until curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)",
+      "Bash(do echo \"Waiting for Jenkins...\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

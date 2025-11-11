@@ -36,7 +36,6 @@ class AnalyzeErrorStepTest {
                 jenkins.getInstance().getDescriptorByType(GlobalConfigurationImpl.class);
 
         // With no auto-population, values should be null initially
-        assert config.getProvider() == AIProvider.GEMINI;
         assert config.getModel() == null; // No auto-population
         assert config.isEnableAnalysis() == true;
     }

@@ -22,7 +22,6 @@ class ConsolePageDecoratorTest {
         // Reset to default state
         config.setEnableAnalysis(true);
         config.setApiKey(Secret.fromString("test-api-key"));
-        config.setProvider(AIProvider.GEMINI);
         config.setModel("gpt-3.5-turbo");
     }
 

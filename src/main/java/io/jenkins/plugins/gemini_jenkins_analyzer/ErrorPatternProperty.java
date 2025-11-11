@@ -15,10 +15,12 @@ import org.kohsuke.stapler.StaplerRequest2;
 public class ErrorPatternProperty extends JobProperty<Job<?, ?>> {
 
     private String errorPatterns;
+    private int contextLines;
 
     @DataBoundConstructor
     public ErrorPatternProperty() {
         this.errorPatterns = "";
+        this.contextLines = 3;
     }
 
     public String getErrorPatterns() {
@@ -28,6 +30,15 @@ public class ErrorPatternProperty extends JobProperty<Job<?, ?>> {
     @DataBoundSetter
     public void setErrorPatterns(String errorPatterns) {
         this.errorPatterns = errorPatterns != null ? errorPatterns : "";
+    }
+
+    public int getContextLines() {
+        return contextLines;
+    }
+
+    @DataBoundSetter
+    public void setContextLines(int contextLines) {
+        this.contextLines = contextLines >= 0 ? contextLines : 3;
     }
 
     @Extension
@@ -46,11 +57,12 @@ public class ErrorPatternProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
-            if (formData == null || !formData.has("errorPatterns")) {
+            if (formData == null || (!formData.has("errorPatterns") && !formData.has("contextLines"))) {
                 return null;
             }
             ErrorPatternProperty property = new ErrorPatternProperty();
             property.setErrorPatterns(formData.optString("errorPatterns", ""));
+            property.setContextLines(formData.optInt("contextLines", 3));
             return property;
         }
     }

@@ -19,6 +19,46 @@
                     "endsPattern": "^.*Listening for transport dt_socket at address.*"
                 }
             }]
+        },
+        {
+            "label": "Download Jenkins CLI",
+            "type": "shell",
+            "command": "source .env && [ -f jenkins-cli.jar ] || curl -o jenkins-cli.jar $JENKINS_URL/jnlpJars/jenkins-cli.jar",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Plugin",
+            "type": "shell",
+            "command": "mvn clean package -DskipTests",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$mvn"
+        },
+        {
+            "label": "Install Plugin to Jenkins",
+            "type": "shell",
+            "command": "source .env && cat target/gemini-jenkins-analyzer.hpi | java -jar jenkins-cli.jar -s $JENKINS_URL -auth $JENKINS_USER:$JENKINS_API_TOKEN install-plugin =",
+            "problemMatcher": []
+        },
+        {
+            "label": "Restart Jenkins",
+            "type": "shell",
+            "command": "source .env && java -jar jenkins-cli.jar -s $JENKINS_URL -auth $JENKINS_USER:$JENKINS_API_TOKEN safe-restart",
+            "problemMatcher": []
+        },
+        {
+            "label": "Deploy to Jenkins",
+            "type": "shell",
+            "dependsOn": [
+                "Download Jenkins CLI",
+                "Build Plugin",
+                "Install Plugin to Jenkins",
+                "Restart Jenkins"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
         }
     ]
 }

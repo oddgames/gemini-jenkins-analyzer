@@ -3,15 +3,161 @@
     <l:layout title="AI Error Explanation">
         <st:include it="${it.run}" page="sidepanel.jelly"/>
         <l:main-panel>
-            <h1>AI Error Explanation</h1>
+            <h1>🤖 AI Error Explanation</h1>
 
-            <l:card title="Error Logs Sent to AI">
-                <pre style="white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; padding: 10px; border-radius: 4px;" class="jenkins-!-margin-bottom-0">${it.originalErrorLogs}</pre>
-            </l:card>
+            <style>
+                /* Dark mode support for error analysis page */
+                .error-analysis-container {
+                    border: 1px solid var(--input-border);
+                    background: var(--background);
+                }
 
-            <l:card title="AI Analysis (Generated on: ${it.formattedTimestamp})">
-                <pre style="white-space: pre-wrap; word-wrap: break-word;" class="jenkins-!-margin-bottom-0">${it.analysis}</pre>
-            </l:card>
+                .error-analysis-pre {
+                    background-color: var(--background);
+                    border: 1px solid var(--input-border);
+                    color: var(--text-color);
+                }
+
+                .error-analysis-copy-btn {
+                    margin-left: 10px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    padding: 6px 12px;
+                    font-size: 14px;
+                    vertical-align: middle;
+                }
+
+                .error-analysis-copy-btn svg {
+                    flex-shrink: 0;
+                }
+
+                /* Dark mode fallback */
+                @media (prefers-color-scheme: dark) {
+                    .error-analysis-container {
+                        border-color: #444;
+                        background: #2b2b2b;
+                    }
+
+                    .error-analysis-pre {
+                        background-color: #1e1e1e;
+                        border-color: #444;
+                        color: #e0e0e0;
+                    }
+                }
+            </style>
+
+            <div style="margin-bottom: 15px;">
+                <details class="error-analysis-container" style="border-radius: 6px; padding: 15px;">
+                    <summary style="cursor: pointer; font-weight: 600; padding: 5px; user-select: none; font-size: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>📋 Error Logs Sent to AI</span>
+                        <button type="button" class="jenkins-button jenkins-button--tertiary error-analysis-copy-btn" onclick="copyErrorLogsToClipboard(event)" title="Copy to clipboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </summary>
+                    <pre id="error-logs-content" class="error-analysis-pre jenkins-!-margin-bottom-0" style="white-space: pre-wrap; word-wrap: break-word; padding: 10px; border-radius: 4px; margin-top: 10px; max-height: 400px; overflow-y: auto;">${it.originalErrorLogs}</pre>
+                </details>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <details open="true" class="error-analysis-container" style="border-radius: 6px; padding: 15px;">
+                    <summary style="cursor: pointer; font-weight: 600; padding: 5px; user-select: none; font-size: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>✅ AI Analysis (Generated: ${it.formattedTimestamp})</span>
+                        <button type="button" class="jenkins-button jenkins-button--tertiary error-analysis-copy-btn" onclick="copyAnalysisToClipboard(event)" title="Copy to clipboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </summary>
+                    <pre id="analysis-content" class="error-analysis-pre jenkins-!-margin-bottom-0" style="white-space: pre-wrap; word-wrap: break-word; padding: 15px; border-radius: 4px; margin-top: 10px; max-height: 600px; overflow-y: auto;">${it.analysis}</pre>
+                </details>
+            </div>
+
+            <script type="text/javascript">
+                function copyErrorLogsToClipboard(event) {
+                    event.stopPropagation();
+                    const content = document.getElementById('error-logs-content');
+                    if (content &amp;&amp; content.textContent) {
+                        copyToClipboard(content.textContent, event.target);
+                    }
+                }
+
+                function copyAnalysisToClipboard(event) {
+                    event.stopPropagation();
+                    const content = document.getElementById('analysis-content');
+                    if (content &amp;&amp; content.textContent) {
+                        copyToClipboard(content.textContent, event.target);
+                    }
+                }
+
+                function copyToClipboard(text, buttonElement) {
+                    if (!text) {
+                        notificationBar.show('Nothing to copy', notificationBar.WARNING);
+                        return;
+                    }
+
+                    const button = buttonElement.closest('.error-analysis-copy-btn');
+
+                    if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text)
+                            .then(function() {
+                                showCopySuccess(button);
+                            })
+                            .catch(function(err) {
+                                console.error('Failed to copy:', err);
+                                fallbackCopyToClipboard(text, button);
+                            });
+                    } else {
+                        fallbackCopyToClipboard(text, button);
+                    }
+                }
+
+                function fallbackCopyToClipboard(text, button) {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                            showCopySuccess(button);
+                        } else {
+                            notificationBar.show('Failed to copy to clipboard', notificationBar.ERROR);
+                        }
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                        notificationBar.show('Failed to copy to clipboard', notificationBar.ERROR);
+                    }
+
+                    document.body.removeChild(textArea);
+                }
+
+                function showCopySuccess(button) {
+                    if (button) {
+                        const originalText = button.innerHTML;
+                        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                        button.style.color = 'var(--success-color, #28a745)';
+
+                        setTimeout(function() {
+                            button.innerHTML = originalText;
+                            button.style.color = '';
+                        }, 2000);
+                    }
+
+                    notificationBar.show('Copied to clipboard', notificationBar.SUCCESS);
+                }
+            </script>
         </l:main-panel>
     </l:layout>
 </j:jelly>

@@ -4,6 +4,15 @@ document.addEventListener('DOMContentLoaded', function () {
     !window.location.pathname.includes('/error-explanation')
   ) {
     checkBuildStatusAndAddButton();
+
+    // Check if auto-analyze parameter is present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('autoAnalyze') === 'true') {
+      // Wait a moment for the page to fully load, then trigger analysis
+      setTimeout(function() {
+        analyzeConsoleError();
+      }, 1000);
+    }
   }
 
   // Move containers to correct position
@@ -230,6 +239,13 @@ Behaviour.specify(".eep-generate-new-button", "AnalyzerErrorView", 0, function(e
 function generateNewAnalysis() {
   hideConfirmationDialog();
   clearAnalysisContent();
+
+  // Show immediate feedback that new analysis is starting
+  const statusIcon = document.getElementById('analyzer-status-icon');
+  const statusText = document.getElementById('analyzer-status-text');
+  if (statusIcon) statusIcon.textContent = '🔄';
+  if (statusText) statusText.textContent = 'Regenerating AI Analysis...';
+
   sendAnalyzeRequest(true); // Force new analysis
 }
 
@@ -310,17 +326,38 @@ function showErrorAnalysis(message) {
   const container = document.getElementById('analyzer-error-container');
   const spinner = document.getElementById('analyzer-error-spinner');
   const content = document.getElementById('analyzer-error-content');
+  const statusIcon = document.getElementById('analyzer-status-icon');
+  const statusText = document.getElementById('analyzer-status-text');
 
   container.classList.remove('jenkins-hidden');
   spinner.classList.add('jenkins-hidden');
   content.textContent = message;
+
+  // Update status to show completion
+  if (statusIcon) statusIcon.textContent = '✅';
+  if (statusText) statusText.textContent = 'AI Error Analysis (Complete)';
 }
 
 function showSpinner() {
   const container = document.getElementById('analyzer-error-container');
   const spinner = document.getElementById('analyzer-error-spinner');
+  const content = document.getElementById('analyzer-error-content');
+  const statusIcon = document.getElementById('analyzer-status-icon');
+  const statusText = document.getElementById('analyzer-status-text');
+  const details = document.getElementById('analyzer-error-details');
+
   container.classList.remove('jenkins-hidden');
   spinner.classList.remove('jenkins-hidden');
+
+  // Clear previous content
+  if (content) content.textContent = '';
+
+  // Update status to show it's generating
+  if (statusIcon) statusIcon.textContent = '⚡';
+  if (statusText) statusText.textContent = 'Generating AI Analysis...';
+
+  // Ensure details is open so user sees the spinner
+  if (details) details.setAttribute('open', 'true');
 }
 
 function hideContainer() {
@@ -355,4 +392,86 @@ function hideErrorLogsContainer() {
   if (logsContainer) {
     logsContainer.classList.add('jenkins-hidden');
   }
+}
+
+function copyErrorLogsToClipboard(event) {
+  event.stopPropagation(); // Prevent details from toggling
+  const logsContent = document.getElementById('analyzer-error-logs-content');
+  if (logsContent && logsContent.textContent) {
+    copyToClipboard(logsContent.textContent, event.target);
+  }
+}
+
+function copyAnalysisToClipboard(event) {
+  event.stopPropagation(); // Prevent details from toggling
+  const analysisContent = document.getElementById('analyzer-error-content');
+  if (analysisContent && analysisContent.textContent) {
+    copyToClipboard(analysisContent.textContent, event.target);
+  }
+}
+
+function copyToClipboard(text, buttonElement) {
+  if (!text) {
+    notificationBar.show('Nothing to copy', notificationBar.WARNING);
+    return;
+  }
+
+  // Find the button element (could be the svg or button itself)
+  const button = buttonElement.closest('.analyzer-copy-btn');
+
+  // Modern clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        showCopySuccess(button);
+      })
+      .catch(err => {
+        console.error('Failed to copy:', err);
+        fallbackCopyToClipboard(text, button);
+      });
+  } else {
+    // Fallback for older browsers
+    fallbackCopyToClipboard(text, button);
+  }
+}
+
+function fallbackCopyToClipboard(text, button) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      showCopySuccess(button);
+    } else {
+      notificationBar.show('Failed to copy to clipboard', notificationBar.ERROR);
+    }
+  } catch (err) {
+    console.error('Failed to copy:', err);
+    notificationBar.show('Failed to copy to clipboard', notificationBar.ERROR);
+  }
+
+  document.body.removeChild(textArea);
+}
+
+function showCopySuccess(button) {
+  if (button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+    button.style.color = 'var(--success-color, #28a745)';
+
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.style.color = '';
+    }, 2000);
+  }
+
+  // Also show notification
+  notificationBar.show('Copied to clipboard', notificationBar.SUCCESS);
 }

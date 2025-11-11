@@ -1,0 +1,25 @@
+<div>
+  <p>
+    Number of log lines to include before and after each error line for context.
+  </p>
+  <p>
+    <strong>How it works:</strong>
+  </p>
+  <ul>
+    <li>When an error is detected, the preceding N lines are included</li>
+    <li>After an error, the following N lines are included</li>
+    <li>If no errors occur for N lines, that error block ends</li>
+    <li>Error lines are marked with <code>&gt;&gt;&gt; ERROR:</code> prefix</li>
+  </ul>
+  <p>
+    <strong>Examples:</strong>
+  </p>
+  <ul>
+    <li><strong>3</strong> (default): Good balance of context vs noise</li>
+    <li><strong>5-10</strong>: More context for complex build scripts</li>
+    <li><strong>0</strong>: Only error lines, no context</li>
+  </ul>
+  <p>
+    This helps the AI understand what led to the error and what happened immediately after.
+  </p>
+</div>

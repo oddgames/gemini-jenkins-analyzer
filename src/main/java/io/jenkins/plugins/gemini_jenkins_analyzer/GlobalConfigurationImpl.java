@@ -3,7 +3,6 @@ package io.jenkins.plugins.gemini_jenkins_analyzer;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -13,8 +12,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.jenkinsci.Symbol;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +24,9 @@ import java.util.logging.Logger;
 public class GlobalConfigurationImpl extends GlobalConfiguration {
 
     private Secret apiKey;
-    private AIProvider provider = AIProvider.GEMINI;
     private String apiUrl;
     private String model;
     private boolean enableAnalysis = true;
-    private List<String> errorPatterns = new ArrayList<>();
 
     public GlobalConfigurationImpl() {
         load();
@@ -53,15 +48,6 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
                 this.enableAnalysis = json.getBoolean("enableAnalysis");
             }
 
-            if (json.has("provider")) {
-                String providerStr = json.getString("provider");
-                try {
-                    this.provider = AIProvider.valueOf(providerStr);
-                } catch (IllegalArgumentException e) {
-                    throw new Descriptor.FormException("Invalid provider: " + providerStr, "provider");
-                }
-            }
-
             if (json.has("apiKey")) {
                 String apiKeyStr = json.getString("apiKey");
                 this.apiKey = Secret.fromString(apiKeyStr);
@@ -73,21 +59,6 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
 
             if (json.has("model")) {
                 this.model = json.getString("model");
-            }
-
-            if (json.has("errorPatterns")) {
-                this.errorPatterns = new ArrayList<>();
-                Object patternsObj = json.get("errorPatterns");
-                if (patternsObj instanceof net.sf.json.JSONArray) {
-                    net.sf.json.JSONArray patternsArray = (net.sf.json.JSONArray) patternsObj;
-                    for (Object obj : patternsArray) {
-                        if (obj instanceof String && !((String) obj).trim().isEmpty()) {
-                            this.errorPatterns.add(((String) obj).trim());
-                        }
-                    }
-                } else if (patternsObj instanceof String && !((String) patternsObj).trim().isEmpty()) {
-                    this.errorPatterns.add(((String) patternsObj).trim());
-                }
             }
 
             save();
@@ -106,15 +77,6 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
     @DataBoundSetter
     public void setApiKey(Secret apiKey) {
         this.apiKey = apiKey;
-    }
-
-    public AIProvider getProvider() {
-        return provider != null ? provider : AIProvider.GEMINI;
-    }
-
-    @DataBoundSetter
-    public void setProvider(AIProvider provider) {
-        this.provider = provider;
     }
 
     public String getApiUrl() {
@@ -151,87 +113,9 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
         this.enableAnalysis = enableAnalysis;
     }
 
-    public List<String> getErrorPatterns() {
-        return errorPatterns != null ? errorPatterns : new ArrayList<>();
-    }
-
-    @DataBoundSetter
-    public void setErrorPatterns(List<String> errorPatterns) {
-        this.errorPatterns = errorPatterns != null ? errorPatterns : new ArrayList<>();
-    }
-
     @Override
     public String getDisplayName() {
-        return "Analyze Error Plugin Configuration";
-    }
-
-    /**
-     * Get all available AI providers for the dropdown.
-     */
-    public AIProvider[] getProviderValues() {
-        return AIProvider.values();
-    }
-
-    /**
-     * Populate the provider dropdown items for the UI.
-     */
-    @RequirePOST
-    public ListBoxModel doFillProviderItems() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-
-        ListBoxModel model = new ListBoxModel();
-        AIProvider currentProvider = getProvider(); // Get the current provider
-
-        for (AIProvider p : AIProvider.values()) {
-            model.add(new ListBoxModel.Option(
-                p.getDisplayName(),          // display name
-                p.name(),                    // actual value
-                p == currentProvider         // is selected
-            ));
-        }
-
-        return model;
-    }
-
-    /**
-     * Populate the error pattern preset dropdown items for the UI.
-     */
-    @RequirePOST
-    public ListBoxModel doFillErrorPatternPresetItems() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-
-        ListBoxModel model = new ListBoxModel();
-        for (ErrorPatternPreset preset : ErrorPatternPreset.values()) {
-            model.add(new ListBoxModel.Option(
-                preset.getDisplayName(),
-                preset.name()
-            ));
-        }
-        return model;
-    }
-
-    /**
-     * Get the patterns for a specific preset via AJAX.
-     * This is called when the user selects a preset from the dropdown.
-     */
-    @RequirePOST
-    public FormValidation doGetPresetPatterns(@QueryParameter("preset") String presetName) {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-
-        try {
-            ErrorPatternPreset preset = ErrorPatternPreset.fromString(presetName);
-            List<String> patterns = preset.getPatterns();
-
-            if (patterns.isEmpty()) {
-                return FormValidation.ok("");
-            }
-
-            // Return patterns as newline-separated string
-            return FormValidation.ok(String.join("\n", patterns));
-        } catch (Exception e) {
-            Logger.getLogger(GlobalConfigurationImpl.class.getName()).log(Level.WARNING, "Failed to get preset patterns", e);
-            return FormValidation.error("Failed to get preset patterns: " + e.getMessage());
-        }
+        return "Gemini Jenkins Analyzer Configuration";
     }
 
     /**
@@ -240,21 +124,12 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
      */
     @RequirePOST
     public FormValidation doTestConfiguration(@QueryParameter("apiKey") String apiKey,
-                                                @QueryParameter("provider") String provider,
                                                 @QueryParameter("apiUrl") String apiUrl,
                                                 @QueryParameter("model") String model) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         // Validate only the provided parameters
         Secret testApiKeySecret = (apiKey != null) ? Secret.fromString(apiKey) : null;
-        AIProvider testProvider = null;
-        if (provider != null && !provider.isEmpty()) {
-            try {
-                testProvider = AIProvider.valueOf(provider);
-            } catch (IllegalArgumentException e) {
-                return FormValidation.error("Invalid provider: " + provider);
-            }
-        }
         String testApiUrl = apiUrl != null ? apiUrl : "";
         String testModel = model != null ? model : "";
 
@@ -266,9 +141,6 @@ public class GlobalConfigurationImpl extends GlobalConfiguration {
 
             GlobalConfigurationImpl tempConfig = new GlobalConfigurationImpl();
             tempConfig.setApiKey(testApiKeySecret);
-            if (testProvider != null) {
-                tempConfig.setProvider(testProvider);
-            }
             tempConfig.setApiUrl(testApiUrl);
             tempConfig.setModel(testModel);
 

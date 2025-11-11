@@ -29,7 +29,6 @@ class AIServiceUnitTest {
     @BeforeEach
     void setUp() {
         // Set up default mock behavior
-        when(config.getProvider()).thenReturn(AIProvider.GEMINI);
         when(config.getApiKey()).thenReturn(Secret.fromString("test-api-key"));
         when(config.getModel()).thenReturn("gemini-2.0-flash");
         when(config.getApiUrl()).thenReturn(null);
@@ -191,7 +190,6 @@ class AIServiceUnitTest {
 
     @Test
     void testGeminiProviderConfiguration() {
-        when(config.getProvider()).thenReturn(AIProvider.GEMINI);
         when(config.getApiKey()).thenReturn(Secret.fromString("test-gemini-key"));
 
         AIService geminiService = new AIService(config);
@@ -205,8 +203,7 @@ class AIServiceUnitTest {
 
     @Test
     void testServiceCreationWithDifferentProviders() {
-        // Test that service can be created with GEMINI provider
-        when(config.getProvider()).thenReturn(AIProvider.GEMINI);
+        // Test that service can be created (always uses Gemini)
         AIService geminiService = new AIService(config);
         assertNotNull(geminiService);
     }
