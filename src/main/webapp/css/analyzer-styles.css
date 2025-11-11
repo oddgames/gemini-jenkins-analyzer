@@ -1,0 +1,46 @@
+/* Dark mode support using CSS custom properties */
+.analyzer-details-container {
+  border: 1px solid var(--input-border);
+  background: var(--background);
+}
+
+.analyzer-pre-content {
+  background-color: var(--background);
+  border: 1px solid var(--input-border);
+  color: var(--text-color);
+}
+
+.analyzer-spinner-text {
+  color: var(--link-color, #0066cc);
+}
+
+.analyzer-copy-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.analyzer-copy-btn:hover {
+  opacity: 0.8;
+}
+
+.analyzer-copy-btn svg {
+  flex-shrink: 0;
+}
+
+/* Ensure proper contrast in both modes */
+@media (prefers-color-scheme: dark) {
+  .analyzer-details-container {
+    border-color: #444;
+    background: #2b2b2b;
+  }
+
+  .analyzer-pre-content {
+    background-color: #1e1e1e;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+}

@@ -11,7 +11,18 @@
       "Bash(java -jar jenkins-cli.jar -s:*)",
       "Bash(until curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)",
       "Bash(do echo \"Waiting for Jenkins...\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(./mvnw clean package:*)",
+      "Bash(/c/Users/ODDPH/scoop/shims/mvn --version)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" --version)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" clean package -DskipTests)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" -U clean)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" help:effective-pom)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" -X validate)",
+      "Bash(scoop install:*)",
+      "Bash(\"/c/Users/ODDPH/scoop/apps/maven/current/bin/mvn\" dependency:resolve-plugins -DskipTests)"
     ],
     "deny": [],
     "ask": []
